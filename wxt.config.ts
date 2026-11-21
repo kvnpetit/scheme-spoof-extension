@@ -23,6 +23,7 @@ export default defineConfig({
         description: 'Toggle light and dark in the current tab',
       },
     },
+    // WXT uses browser target IDs for the engine-specific manifest settings.
     ...(browser === 'safari' && {
       browser_specific_settings: {
         safari: { strict_min_version: '18.4' },

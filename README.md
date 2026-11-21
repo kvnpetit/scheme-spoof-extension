@@ -1,6 +1,6 @@
 # SchemeSpoof
 
-SchemeSpoof is a Manifest V3 extension for Chromium browsers, Firefox, and Safari. It lets developers test the color scheme a page sees in the current tab without changing the theme of the browser or operating system.
+SchemeSpoof is a Manifest V3 extension with builds for Chromium (Blink), Gecko, and WebKit. It lets developers test the color scheme a page sees in the current tab without changing the theme of the browser or operating system.
 
 [Installation](#install-locally-without-a-store) · [Browsers](#browser-compatibility) · [Usage](#choose-a-theme) · [Diagnostics](#page-diagnostics) · [Development](#develop-and-package) · [Releases](#publish-a-github-release) · [License](LICENSE)
 
@@ -8,35 +8,37 @@ SchemeSpoof is a Manifest V3 extension for Chromium browsers, Firefox, and Safar
 
 ### Download a ready-to-use build
 
-On the project's GitHub **Releases** page, open the latest release and download the browser ZIP under **Assets**. Use `-chrome.zip` for Chrome, Edge, and other Chromium browsers, `-firefox.zip` for Firefox, or `-safari.zip` for Safari. Extract it to a folder you plan to keep, then follow the browser instructions below using that folder. The extracted folder contains `manifest.json` and is ready to load without Bun.
+On the project's GitHub **Releases** page, open the latest release and use the compatibility table below to choose a ZIP under **Assets**. Extract it to a folder you plan to keep, then follow the installation steps for that build. The extracted folder contains `manifest.json` and is ready to load without Bun.
 
 The browser ZIPs are listed separately from GitHub's **Source code** archives. Each release also includes `SHA256SUMS.txt`.
 
-To verify the downloads on Linux or macOS, put the ZIPs and `SHA256SUMS.txt` in the same folder and run `shasum -a 256 -c SHA256SUMS.txt`. If you downloaded a single ZIP, run `shasum -a 256 schemespoof-v0.1.0-chrome.zip` with its actual filename and compare it with the matching line. On Windows, use `Get-FileHash -Algorithm SHA256 schemespoof-v0.1.0-chrome.zip` in PowerShell with the filename you downloaded.
+To verify the downloads on Linux or macOS, put the ZIPs and `SHA256SUMS.txt` in the same folder and run `shasum -a 256 -c SHA256SUMS.txt`. If you downloaded a single ZIP, replace `your-release.zip` with the filename in `shasum -a 256 your-release.zip` and compare the result with the matching line. On Windows, use `Get-FileHash -Algorithm SHA256 your-release.zip` in PowerShell.
 
 ### Browser compatibility
 
-| Engine           | Browsers                                                                                | Release ZIP    |
-| ---------------- | --------------------------------------------------------------------------------------- | -------------- |
-| Blink / Chromium | Google Chrome, Chromium, Microsoft Edge, Brave, Vivaldi, Opera, and Opera GX on desktop | `-chrome.zip`  |
-| Gecko            | Firefox 128+ on desktop                                                                 | `-firefox.zip` |
-| WebKit           | Safari 18.4+ on macOS, iPhone, and iPad                                                 | `-safari.zip`  |
+| Engine           | Release ZIP    | Installation and browser examples                                                                                                      |
+| ---------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Chromium (Blink) | `-chrome.zip`  | [Desktop browsers](#chromium-blink). Examples include Chromium, Google Chrome, Microsoft Edge, Brave, Vivaldi, Opera, and Opera GX.    |
+| Gecko            | `-firefox.zip` | [Firefox 128+ on desktop](#gecko). Gecko derivatives can use this build if they support the required extension APIs and local loading. |
+| WebKit           | `-safari.zip`  | Safari 18.4+ on [macOS](#webkit-on-macos), [iPhone, and iPad](#package-for-apple-platforms). Mobile installation uses Xcode.           |
 
-Chrome and Firefox run the installed extension in CI. Brave, Vivaldi, Opera, and Opera GX share the Chromium build and are outside the automated test suite. Playwright tests the Safari page script in WebKit. Installing the extension in Safari still requires Safari on an Apple device. [Brave extension support](https://brave.com/learn/using-chrome-extensions-in-brave/) · [Vivaldi extensions](https://help.vivaldi.com/desktop/appearance-customization/extensions/) · [Opera extensions](https://help.opera.com/en/extensions/basics/) · [Safari installation](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension)
+Choose the package by engine family and the browser's support for Manifest V3 WebExtensions. The ZIP suffixes follow the WXT target names `chrome`, `firefox`, and `safari`. Each family shares a single build. The [CI section](#continuous-integration) describes which browsers and extension components are tested. [WXT build targets](https://wxt.dev/guide/essentials/target-different-browsers.html)
+
+Chromium browsers can have different extension menus or local installation policies. Check the browser's own documentation if the standard steps differ. [Brave extension support](https://brave.com/learn/using-chrome-extensions-in-brave/) · [Vivaldi extensions](https://help.vivaldi.com/desktop/appearance-customization/extensions/) · [Opera extensions](https://help.opera.com/en/extensions/basics/)
 
 Firefox derivatives such as LibreWolf, Waterfox, and Zen support Firefox add-ons. The Gecko build is the starting point if your browser offers temporary add-on loading. SchemeSpoof has no browser-specific test coverage for these forks. Orion’s Chrome and Firefox extension support is experimental. [LibreWolf add-ons](https://librewolf.net/docs/addons/) · [Waterfox add-ons](https://www.waterfox.com/support/addons-help/) · [Zen extensions](https://docs.zen-browser.app/user-manual/extensions) · [Orion extension support](https://help.kagi.com/orion/support-and-community/troubleshooting/troubleshooting-extension-issues.html)
 
 ### Build locally if needed
 
-From a fresh checkout, install [Bun](https://bun.sh/docs/installation), then run `bun install --frozen-lockfile` in the project directory. GitHub Actions uses Bun 1.4.5. Then run the command for your browser.
+From a fresh checkout, install Bun, then run `bun install --frozen-lockfile` in the project directory. GitHub Actions uses Bun 1.4.5. Run the command for your engine family. [Bun installation](https://bun.sh/docs/installation)
 
-| Browser                                   | Build command            | Output folder         |
-| ----------------------------------------- | ------------------------ | --------------------- |
-| Chrome, Edge, or another Chromium browser | `bun run build:chromium` | `.output/chrome-mv3`  |
-| Firefox 128+                              | `bun run build:gecko`    | `.output/firefox-mv3` |
-| Safari 18.4+                              | `bun run build:webkit`   | `.output/safari-mv3`  |
+| Engine           | Build command            | Output folder         |
+| ---------------- | ------------------------ | --------------------- |
+| Chromium (Blink) | `bun run build:chromium` | `.output/chrome-mv3`  |
+| Gecko            | `bun run build:gecko`    | `.output/firefox-mv3` |
+| WebKit           | `bun run build:webkit`   | `.output/safari-mv3`  |
 
-### Chromium browsers
+### Chromium (Blink)
 
 1. Open the extensions page for your browser.
 
@@ -54,7 +56,9 @@ From a fresh checkout, install [Bun](https://bun.sh/docs/installation), then run
 
 Keep the selected folder at the same path. To update, extract the new ZIP or rebuild into the same folder, click **Reload** on the SchemeSpoof card, then refresh any page that was already open. [Chrome local installation](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world) · [Edge local installation](https://learn.microsoft.com/en-us/microsoft-edge/extensions/getting-started/extension-sideloading) · [Opera local installation](https://help.opera.com/en/extensions/testing/)
 
-### Firefox
+### Gecko
+
+These steps use Firefox's temporary add-on loader. Gecko derivatives may expose the same loader.
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Click **Load Temporary Add-on**.
@@ -65,7 +69,9 @@ Repeat the loading step after restarting Firefox. While Firefox is open, you can
 
 For an installation that survives restarts in standard Firefox, Mozilla signing is required. You can request an **unlisted** signature and install the resulting signed `.xpi` from `about:addons` using **Install Add-on From File**. An unlisted signature keeps the extension off the public add-on catalog. [Mozilla signing and distribution](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) · [Install from file](https://extensionworkshop.com/documentation/publish/install-self-distributed/)
 
-### Safari on macOS
+### WebKit on macOS
+
+Use Safari's temporary extension loader on macOS.
 
 1. Open **Safari > Settings > Advanced** and enable **Show features for web developers**.
 2. Open the **Developer** settings tab and click **Add Temporary Extension…**.
@@ -73,9 +79,9 @@ For an installation that survives restarts in standard Firefox, Mozilla signing 
 
 Safari removes temporary extensions after 24 hours or when you quit Safari. On iPhone and iPad, install through a containing app built with Xcode as described below. [Apple’s Safari installation guide](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension)
 
-### Package for Safari on macOS, iPhone, and iPad
+### Package for Apple platforms
 
-On a Mac with Xcode, run the packager after building the Safari target.
+On a Mac with Xcode, run the packager after building the WebKit target.
 
 ```sh
 xcrun safari-web-extension-packager .output/safari-mv3
@@ -93,9 +99,9 @@ Every new tab starts on **System**. An override follows its tab through reloads 
 
 Use **Alt+Shift+D** to switch the current tab between Light and Dark. The popup shows the shortcut currently assigned by the browser.
 
-- **Firefox** — Select **Edit shortcut** in the popup, enter a combination such as `Alt+Shift+D`, and save it. Save an empty field to disable it.
-- **Chrome and Edge** — Select **Edit shortcut** to open the browser's extension shortcuts page and change the binding there.
-- **Safari 26 or newer on Mac** — Open **Safari → Settings → Extensions** to change extension shortcuts.
+- **Gecko** — When the browser exposes `commands.update`, as Firefox does, select **Edit shortcut** in the popup. Save a combination such as `Alt+Shift+D`, or save an empty field to disable it.
+- **Chromium (Blink)** — Use your browser's extension shortcuts page. In Chrome and Edge, **Edit shortcut** opens that page from the popup.
+- **WebKit** — On macOS with Safari 26 or newer, open **Safari → Settings → Extensions** to change extension shortcuts.
 
 ## Page diagnostics
 
@@ -120,7 +126,7 @@ Run the command for the engine you want to work on, then load its output in a co
 
 | Engine           | Command                | Development output        |
 | ---------------- | ---------------------- | ------------------------- |
-| Blink / Chromium | `bun run dev:chromium` | `.output/chrome-mv3-dev`  |
+| Chromium (Blink) | `bun run dev:chromium` | `.output/chrome-mv3-dev`  |
 | Gecko            | `bun run dev:gecko`    | `.output/firefox-mv3-dev` |
 | WebKit           | `bun run dev:webkit`   | `.output/safari-mv3-dev`  |
 
@@ -130,7 +136,7 @@ Run the command for the engine you want to work on, then load its output in a co
 
 | Engine           | Build                    | Build and ZIP          | Test                    |
 | ---------------- | ------------------------ | ---------------------- | ----------------------- |
-| Blink / Chromium | `bun run build:chromium` | `bun run zip:chromium` | `bun run test:chromium` |
+| Chromium (Blink) | `bun run build:chromium` | `bun run zip:chromium` | `bun run test:chromium` |
 | Gecko            | `bun run build:gecko`    | `bun run zip:gecko`    | `bun run test:gecko`    |
 | WebKit           | `bun run build:webkit`   | `bun run zip:webkit`   | `bun run test:webkit`   |
 
@@ -156,16 +162,16 @@ Bun pins new direct dependencies to exact versions. Its 24-hour minimum release 
 
 The [Build and release workflow](.github/workflows/build-release.yml) runs both jobs on **Ubuntu 24.04**. It uses **Bun 1.4.5** for the dependency audit, installation, quality checks, builds, and browser tests.
 
-| Event                                   | What runs                                                                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request or push to `main`          | Audit and install the checked-in lockfile, run `bun run check`, build Chromium, Firefox, and Safari, then run the engine smoke tests. |
-| Push a release tag `vMAJOR.MINOR.PATCH` | Validate the tag, use its version in each manifest, run the same checks and builds, and publish the verified release files.           |
+| Event                                   | What runs                                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Pull request or push to `main`          | Audit and install the checked-in lockfile, run `bun run check`, and build and test the Chromium, Gecko, and WebKit targets. |
+| Push a release tag `vMAJOR.MINOR.PATCH` | Validate the tag, use its version in each manifest, run the same checks and builds, and publish the verified release files. |
 
-The CI tests one representative of each engine. Chrome (Chromium/Blink) and Firefox (Gecko) run the installed extension in temporary profiles. Playwright WebKit runs the Safari build’s page script on a test page and checks its JavaScript and CSS behavior. Safari installation, permissions, the toolbar popup, and the extension APIs still need the [manual Safari check on macOS](#run-the-browser-checks). [Playwright browsers](https://playwright.dev/docs/browsers) · [Apple’s Safari installation guide](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension)
+CI covers all three engine families. For Chromium (Blink) and Gecko, it loads the complete extension in temporary desktop browser profiles using Chrome and Firefox. For WebKit, Playwright runs the compiled page script and verifies its JavaScript and CSS behavior. Safari installation, permissions, the toolbar popup, and extension APIs are covered by the [manual WebKit check on macOS](#run-the-browser-checks). [Playwright browsers](https://playwright.dev/docs/browsers) · [Apple’s Safari installation guide](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension)
 
 ### Release artifacts and retries
 
-1. The build job checks all three manifests for Manifest V3 and the tag-derived version and verifies that each build contains the project license. It creates `schemespoof-vMAJOR.MINOR.PATCH-<browser>.zip` for each target with `manifest.json` and `LICENSE` at the ZIP root. It writes `SHA256SUMS.txt` and uploads the files as the `schemespoof-release` workflow artifact.
+1. The build job checks all three manifests for Manifest V3 and the tag-derived version and verifies that each build contains the project license. It creates `schemespoof-vMAJOR.MINOR.PATCH-<wxt-target>.zip` for each engine family with `manifest.json` and `LICENSE` at the ZIP root. It writes `SHA256SUMS.txt` and uploads the files as the `schemespoof-release` workflow artifact.
 2. After the build job succeeds, the release job downloads the artifact, checks the SHA-256 sums and the three expected ZIP files, and publishes them with installation notes under **Releases**. It uses the built-in GitHub token with `contents: write` in the release job.
 3. On retry, the workflow leaves its already published release in place. It updates its own draft and publishes it if needed. If the tag has a release created outside the workflow, it stops so that release can be reviewed.
 
@@ -178,17 +184,17 @@ git tag -a v0.1.0 -m "SchemeSpoof v0.1.0"
 git push origin v0.1.0
 ```
 
-Follow the run in the repository's **Actions** tab. When **Publish GitHub Release** succeeds, open the tag under **Releases** and check the three ZIPs and `SHA256SUMS.txt` under **Assets**. Public downloads require a public GitHub repository. The [installation guide](#install-locally-without-a-store) covers unsigned Firefox builds and Safari packaging.
+Follow the run in the repository's **Actions** tab. When **Publish GitHub Release** succeeds, open the tag under **Releases** and check the three ZIPs and `SHA256SUMS.txt` under **Assets**. Public downloads require a public GitHub repository. The [installation guide](#install-locally-without-a-store) covers temporary Gecko installation and WebKit packaging on Apple platforms.
 
 ## Run the browser checks
 
 Run `bun run playwright install webkit` once, then run `bun run build` followed by `bun run test` for all three engines. To check a single engine, build and test it using the commands in the [table above](#production-builds-and-archives).
 
-The Chromium and Gecko tests discover standard Chrome and Firefox installations on Windows, Linux, and macOS. Set `SCHEMESPOOF_CHROME` or `SCHEMESPOOF_FIREFOX` to override an executable. GitHub Actions uses the browsers bundled with its Ubuntu image. The tests use temporary profiles and [an HTTP test page](tests/fixture.html) to check independent tab themes, reloads, navigation, tab closure, restoration of System mode, live CSS and JavaScript changes, and diagnostics.
+The Chromium and Gecko tests look for Chrome or Chromium and for Firefox on Windows, Linux, and macOS. Override discovery with `SCHEMESPOOF_CHROME` or `SCHEMESPOOF_CHROMIUM` for the Chromium test, and `SCHEMESPOOF_FIREFOX` for the Gecko test. GitHub Actions uses the browsers bundled with its Ubuntu image. Both suites use temporary profiles and [an HTTP test page](tests/fixture.html) to check independent tab themes, reloads, navigation, tab closure, restoration of System mode, live CSS and JavaScript changes, and diagnostics.
 
-The WebKit test runs the compiled Safari page script before the fixture's own JavaScript and checks `matchMedia`, change events, linked and dynamic stylesheets, and restoration of System mode. Ubuntu CI uses `playwright install --with-deps webkit` to download the browser and install the required system libraries.
+The WebKit test runs the target's compiled page script before the fixture's own JavaScript and checks `matchMedia`, change events, linked and dynamic stylesheets, and restoration of System mode. Ubuntu CI uses `playwright install --with-deps webkit` to download the browser and install the required system libraries.
 
-To check Safari manually, start the same test page with `bun run test:serve`. Open the printed URL in two Safari tabs. Select **Dark** in one tab and **Light** in the other. Reload the first tab and verify that `matchMedia` still reports **Dark** in **Page diagnostics**. Select **System** in the first tab and confirm that the second tab still reports **Light**.
+To check the full WebKit extension manually, load the build in Safari on macOS and start the same test page with `bun run test:serve`. Open the printed URL in two tabs. Select **Dark** in one tab and **Light** in the other. Reload the first tab and verify that `matchMedia` still reports **Dark** in **Page diagnostics**. Select **System** in the first tab and confirm that the second tab still reports **Light**.
 
 ## How it works
 

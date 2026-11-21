@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build and test browser extensions
+    name: Build and test all engine targets
     if: github.event_name != 'push' || !github.event.deleted
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -58,16 +58,16 @@ jobs:
       - name: Build Chromium, Gecko, and WebKit packages
         run: bun run build
 
-      - name: Test Chromium in Chrome
+      - name: Test the Chromium extension
         run: bun run test:chromium
 
-      - name: Test Gecko in Firefox
+      - name: Test the Gecko extension
         run: bun run test:gecko
 
       - name: Install WebKit for engine testing
         run: bun run playwright install --with-deps webkit
 
-      - name: Test the Safari content script in WebKit
+      - name: Test the WebKit content script
         run: bun run test:webkit
 
       - name: Create release ZIPs and checksums
@@ -142,11 +142,11 @@ jobs:
           notes="$RUNNER_TEMP/schemespoof-notes.md"
           cat > "$notes" <<'EOF'
           <!-- schemespoof-release -->
-          Download the SchemeSpoof ZIP for your browser under **Assets**, then extract it.
+          Choose a SchemeSpoof ZIP under **Assets** by engine family, then extract it. Each ZIP uses the corresponding WXT target name.
 
-          - **Chrome / Edge** — Use the shared `-chrome.zip` build. Open the browser’s extensions settings, enable Developer mode, and load the extracted folder using **Load unpacked**.
-          - **Firefox** — In `about:debugging#/runtime/this-firefox`, load the extracted `manifest.json` as a temporary add-on. This unsigned build must be loaded again after restarting Firefox.
-          - **Safari 18.4+ on macOS** — Use **Add Temporary Extension…** in Safari’s Developer settings and choose the extracted folder. iPhone and iPad use the Xcode packaging instructions.
+          - **Chromium (Blink)** — Use `-chrome.zip` for compatible desktop browsers, including Chrome, Edge, and Brave. Enable Developer mode on the extensions page and load the extracted folder with **Load unpacked**.
+          - **Gecko** — Use `-firefox.zip`. In Firefox 128+, open `about:debugging#/runtime/this-firefox` and load the extracted `manifest.json` as a temporary add-on. Repeat after restarting the browser.
+          - **WebKit** — Use `-safari.zip` for Safari 18.4+. On macOS, select **Add Temporary Extension…** in Safari’s Developer settings and choose the extracted folder. Follow the Xcode packaging instructions for iPhone and iPad.
           - **SHA256SUMS.txt** contains a SHA-256 checksum for each ZIP.
           EOF
           printf '\n[Full installation instructions](%s/%s/blob/%s/README.md#install-locally-without-a-store)\n' \
