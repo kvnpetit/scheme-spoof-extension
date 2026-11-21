@@ -1,0 +1,176 @@
+name: Build and release
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v[0-9]*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    name: Build and test browser extensions
+    if: github.event_name != 'push' || !github.event.deleted
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.4.5'
+
+      - name: Set release version from tag
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          tag_pattern='^v(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,4})$'
+          if [[ ! "$GITHUB_REF_NAME" =~ $tag_pattern ]]; then
+            printf 'Use a version tag such as v1.2.3. Received: %s\n' "$GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+
+          version=${GITHUB_REF_NAME#v}
+          IFS=. read -r major minor patch <<< "$version"
+          if (( major > 65535 || minor > 65535 || patch > 65535 || major + minor + patch == 0 )); then
+            printf 'The tag cannot be represented as a browser extension version: %s\n' "$GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          printf 'SCHEMESPOOF_RELEASE_VERSION=%s\n' "$version" >> "$GITHUB_ENV"
+
+      - name: Audit dependencies for high and critical advisories
+        run: bun audit --audit-level=high
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting, lint and types
+        run: bun run check
+
+      - name: Build Chromium, Gecko, and WebKit packages
+        run: bun run build
+
+      - name: Test Chromium in Chrome
+        run: bun run test:chromium
+
+      - name: Test Gecko in Firefox
+        run: bun run test:gecko
+
+      - name: Install WebKit for engine testing
+        run: bun run playwright install --with-deps webkit
+
+      - name: Test the Safari content script in WebKit
+        run: bun run test:webkit
+
+      - name: Create release ZIPs and checksums
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          browsers=(chrome firefox safari)
+          for browser in "${browsers[@]}"; do
+            build_dir=".output/${browser}-mv3"
+            cmp LICENSE "$build_dir/LICENSE"
+            if ! jq -e --arg version "$SCHEMESPOOF_RELEASE_VERSION" \
+              '.manifest_version == 3 and .version == $version' "$build_dir/manifest.json" > /dev/null; then
+              printf 'Expected a Manifest V3 build of version %s for %s.\n' "$SCHEMESPOOF_RELEASE_VERSION" "$browser" >&2
+              exit 1
+            fi
+          done
+
+          destination="$RUNNER_TEMP/schemespoof-release"
+          mkdir "$destination"
+          assets=()
+          for browser in "${browsers[@]}"; do
+            asset="schemespoof-${GITHUB_REF_NAME}-${browser}.zip"
+            (
+              cd ".output/${browser}-mv3"
+              zip -q -9 -r -D "$destination/$asset" .
+            )
+            assets+=("$asset")
+          done
+
+          cd "$destination"
+          sha256sum -- "${assets[@]}" > SHA256SUMS.txt
+
+      - name: Upload tested release files
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: schemespoof-release
+          path: ${{ runner.temp }}/schemespoof-release/
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
+  release:
+    name: Publish GitHub Release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: schemespoof-release
+          path: release
+
+      - name: Verify and publish the release
+        shell: bash
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha256sum --check SHA256SUMS.txt
+          assets=()
+          for browser in chrome firefox safari; do
+            asset="schemespoof-${GITHUB_REF_NAME}-${browser}.zip"
+            test -f "$asset"
+            assets+=("$asset")
+          done
+
+          notes="$RUNNER_TEMP/schemespoof-notes.md"
+          cat > "$notes" <<'EOF'
+          <!-- schemespoof-release -->
+          Download the SchemeSpoof ZIP for your browser under **Assets**, then extract it.
+
+          - **Chrome / Edge** — Use the shared `-chrome.zip` build. Open the browser’s extensions settings, enable Developer mode, and load the extracted folder using **Load unpacked**.
+          - **Firefox** — In `about:debugging#/runtime/this-firefox`, load the extracted `manifest.json` as a temporary add-on. This unsigned build must be loaded again after restarting Firefox.
+          - **Safari 18.4+ on macOS** — Use **Add Temporary Extension…** in Safari’s Developer settings and choose the extracted folder. iPhone and iPad use the Xcode packaging instructions.
+          - **SHA256SUMS.txt** contains a SHA-256 checksum for each ZIP.
+          EOF
+          printf '\n[Full installation instructions](%s/%s/blob/%s/README.md#install-locally-without-a-store)\n' \
+            "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" >> "$notes"
+
+          existing=$(gh release view "$GITHUB_REF_NAME" --json body,isDraft --jq \
+            'if (.body // "" | contains("<!-- schemespoof-release -->")) then
+              (if .isDraft then "draft" else "published" end)
+            else "external" end' 2>/dev/null || true)
+
+          case "$existing" in
+            published)
+              echo "Release $GITHUB_REF_NAME was already published by the workflow."
+              ;;
+            draft)
+              gh release upload "$GITHUB_REF_NAME" "${assets[@]}" SHA256SUMS.txt --clobber
+              gh release edit "$GITHUB_REF_NAME" --draft=false --verify-tag
+              ;;
+            external)
+              echo "A release already exists for $GITHUB_REF_NAME. Review it before retrying." >&2
+              exit 1
+              ;;
+            *)
+              gh release create "$GITHUB_REF_NAME" "${assets[@]}" SHA256SUMS.txt \
+                --verify-tag --title "SchemeSpoof $GITHUB_REF_NAME" --notes-file "$notes" --generate-notes
+              ;;
+          esac
