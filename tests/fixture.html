@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>SchemeSpoof test page</title>
+<style>
+  @media (prefers-color-scheme: light) {
+    #theme {
+      color: rgb(10, 11, 12);
+    }
+  }
+  @media (prefers-color-scheme: dark) and (min-width: 10px) {
+    #theme {
+      color: rgb(20, 21, 22);
+    }
+  }
+</style>
+<script>
+  const linked = document.createElement('link');
+  linked.rel = 'stylesheet';
+  linked.media = '(prefers-color-scheme: dark)';
+  linked.href = '/dark.css';
+  document.head.append(linked);
+
+  const external = document.createElement('link');
+  external.rel = 'stylesheet';
+  external.href =
+    'http://' +
+    (location.hostname === 'localhost' ? '127.0.0.1' : 'localhost') +
+    ':' +
+    location.port +
+    '/cross-origin.css';
+  document.head.append(external);
+
+  window.probe = {
+    start: performance.timeOrigin,
+    events: [],
+    queries: [
+      matchMedia('(prefers-color-scheme: dark)'),
+      matchMedia('(prefers-color-scheme: light) and (min-width: 10px)'),
+      matchMedia('not (prefers-color-scheme: dark)'),
+    ],
+  };
+
+  probe.queries[0].addEventListener('change', (event) =>
+    probe.events.push(['listener', event.matches, event.target === probe.queries[0]]),
+  );
+  probe.queries[1].addListener((event) => probe.events.push(['legacy', event.matches]));
+  probe.queries[2].onchange = (event) => probe.events.push(['onchange', event.matches]);
+</script>
+<div id="theme">CSS theme</div>
+<div id="linked">Linked stylesheet</div>
+<div id="dynamic">Dynamic stylesheet</div>
