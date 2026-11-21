@@ -1,0 +1,349 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light dark;
+  font:
+    13px/1.45 Inter,
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+  --canvas: light-dark(#f1eff7, #15131d);
+  --surface: light-dark(#fff, #211e2c);
+  --soft: light-dark(#f5f3fa, #2a2638);
+  --ink: light-dark(#241b39, #f6f2ff);
+  --muted: light-dark(#675e77, #b7aecb);
+  --border: light-dark(#e4deed, #3b344b);
+  --accent: light-dark(#52369e, #cbb5ff);
+  --accent-soft: light-dark(#eee6ff, #3b2d55);
+  --accent-border: light-dark(#cfc0f4, #66518a);
+  --warning: light-dark(#8e4a15, #ffcb86);
+  --danger: light-dark(#ad394d, #ff9da9);
+  --scroll-thumb: light-dark(#9582b0, #8771a8);
+  --scroll-thumb-hover: light-dark(#725698, #b39bd4);
+  --shadow: 0 2px 4px light-dark(#27124d0b, #09061138);
+  --mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  /* The toolbar popup sizes itself to the body. Viewport units can cap its initial width. */
+  width: 382px;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+
+  appearance: none;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface)
+    radial-gradient(ellipse at right top, var(--accent-soft), transparent 75%);
+  border-bottom: 1px solid var(--border);
+}
+
+.header img {
+  flex: none;
+  padding: 4px;
+  border: 1px solid var(--accent-border);
+  border-radius: 15px;
+  background: var(--soft);
+}
+
+.brand {
+  min-width: 0;
+}
+h1 {
+  margin: 0 0 5px;
+  font-size: 22px;
+  font-weight: 740;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.domain {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font: 11px/1.5 var(--mono);
+}
+
+.domain .icon {
+  width: 13px;
+  height: 13px;
+}
+#domain {
+  overflow-wrap: anywhere;
+}
+
+main {
+  display: grid;
+  gap: 16px;
+  padding: 16px 18px 18px;
+}
+
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  :root {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  :root::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  :root::-webkit-scrollbar-button {
+    display: none;
+  }
+  :root::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--scroll-thumb);
+  }
+  :root::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-hover);
+  }
+}
+
+.card {
+  padding: 14px 16px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+h2 .icon {
+  color: var(--accent);
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segments button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 60px;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.segments .icon {
+  width: 19px;
+  height: 19px;
+}
+.segments button[data-scheme='light'] .icon {
+  color: var(--warning);
+}
+.segments button[data-scheme='dark'] .icon {
+  color: var(--accent);
+}
+.segments button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  color: var(--ink);
+}
+.segments button[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 12px;
+}
+#shortcut {
+  margin-top: 12px;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#shortcut .note {
+  margin: 0;
+  font-size: 11px;
+}
+#shortcut kbd {
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--soft);
+  color: var(--ink);
+  font: 10px var(--mono);
+  white-space: nowrap;
+}
+#edit-shortcut {
+  flex: none;
+}
+#shortcut-editor {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+#shortcut-editor label {
+  font-size: 11px;
+  font-weight: 650;
+}
+#shortcut-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 30px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--ink);
+  font: 11px var(--mono);
+}
+#shortcut #shortcut-status:not(:empty) {
+  margin-top: 8px;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 650;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.icon-button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+#diagnostic-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+#diagnostic-values div {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--soft);
+}
+
+#diagnostic-values dt {
+  color: var(--muted);
+  font-size: 10px;
+}
+#diagnostic-values dd {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font: 650 13px/1.3 var(--mono);
+}
+#diagnostic-values code {
+  font: inherit;
+  font-family: var(--mono);
+}
+#diagnostic-status {
+  margin: 0;
+}
+#diagnostic-status:empty {
+  display: none;
+}
+
+#status {
+  margin: 0;
+  color: var(--danger);
+  font-size: 11px;
+}
+#status:empty {
+  display: none;
+}

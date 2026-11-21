@@ -1,0 +1,43 @@
+{
+  "name": "scheme-spoof-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Test light and dark color schemes in the current tab without changing your browser or system theme.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "bun@1.4.5",
+  "scripts": {
+    "dev": "bun run dev:chromium",
+    "dev:chromium": "wxt -b chrome",
+    "dev:gecko": "wxt -b firefox",
+    "dev:webkit": "wxt -b safari",
+    "build": "bun run build:chromium && bun run build:gecko && bun run build:webkit",
+    "build:chromium": "wxt build -b chrome",
+    "build:gecko": "wxt build -b firefox",
+    "build:webkit": "wxt build -b safari",
+    "zip": "bun run zip:chromium && bun run zip:gecko && bun run zip:webkit",
+    "zip:chromium": "wxt zip -b chrome",
+    "zip:gecko": "wxt zip -b firefox",
+    "zip:webkit": "wxt zip -b safari",
+    "test": "bun run test:chromium && bun run test:gecko && bun run test:webkit",
+    "test:chromium": "bun tests/smoke.mts chrome",
+    "test:gecko": "bun tests/smoke.mts firefox",
+    "test:webkit": "bun tests/webkit.mts",
+    "test:serve": "bun tests/smoke.mts --serve",
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "typecheck": "tsrs --noEmit",
+    "check": "bun run format:check && bun run lint && bun run typecheck",
+    "postinstall": "bun run wxt prepare"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "oxfmt": "0.79.0",
+    "oxlint": "1.94.0",
+    "playwright": "1.65.1",
+    "tsrs": "7.1.0-beta.tsrs4",
+    "web-ext": "10.8.0",
+    "wxt": "0.21.5"
+  }
+}
