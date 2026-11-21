@@ -1,6 +1,6 @@
 {
   "name": "scheme-spoof-extension",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Preview light and dark in the current tab on sites that follow your color preference, even without a theme switch.",
   "license": "MIT",

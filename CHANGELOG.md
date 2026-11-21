@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.2
+
+### Features
+
+- **release** — generate changelogs from conventional commits (b6357c9)
+
+### Fixes
+
+- **shortcut** — make the theme toggle easier to reach (b77215e)
+
 ## v0.1.1
 
 ### Continuous integration
