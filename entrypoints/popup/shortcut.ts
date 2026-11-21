@@ -51,7 +51,7 @@ export async function initializeShortcut() {
         edit.focus();
         status.textContent = 'Shortcut updated.';
       } catch {
-        status.textContent = 'Try another shortcut, using a format like Alt+Shift+D.';
+        status.textContent = 'Try another shortcut, using a format like Ctrl+Shift+Space.';
       } finally {
         save.disabled = false;
       }

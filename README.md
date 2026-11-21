@@ -99,9 +99,9 @@ Open the popup and choose **System**, **Light**, or **Dark** under **Theme for t
 
 Every new tab starts on **System**. An override follows its tab through reloads and navigation, even to another website. Select **System** or close the tab to clear it. Restarting the browser clears all tab overrides. Updating from an older version removes the saved site and global preferences.
 
-Use **Alt+Shift+D** to switch the current tab between Light and Dark. The popup shows the shortcut currently assigned by the browser.
+Use **Ctrl+Shift+Space** (**Command+Shift+Space** on Mac, **Ctrl+Launcher+Space** on ChromeOS) to switch the current tab between Light and Dark. The popup shows the shortcut currently assigned by the browser.
 
-- **Gecko** — When the browser exposes `commands.update`, as Firefox does, select **Edit shortcut** in the popup. Save a combination such as `Alt+Shift+D`, or save an empty field to disable it.
+- **Gecko** — When the browser exposes `commands.update`, as Firefox does, select **Edit shortcut** in the popup. Save a combination such as `Ctrl+Shift+Space`, or save an empty field to disable it.
 - **Chromium (Blink)** — Use your browser's extension shortcuts page. In Chrome and Edge, **Edit shortcut** opens that page from the popup.
 - **WebKit** — On macOS with Safari 26 or newer, open **Safari → Settings → Extensions** to change extension shortcuts.
 

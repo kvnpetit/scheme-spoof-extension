@@ -217,7 +217,8 @@ async function runScenario(browser: TestBrowser, port: number) {
     const commands = await (globalThis.browser ?? globalThis.chrome).commands.getAll();
     return commands.find(({ name }) => name === 'toggle-preview')?.shortcut ?? null;
   })()`);
-  assert.equal(typeof (await commandShortcut()), 'string', 'tab theme shortcut is registered');
+  const shortcut = await commandShortcut();
+  assert.ok(typeof shortcut === 'string' && shortcut.length > 0, 'default shortcut is registered');
   await until(
     () => ui('!document.querySelector("#edit-shortcut").hidden'),
     'shortcut editing is available',

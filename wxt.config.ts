@@ -19,7 +19,10 @@ export default defineConfig({
     host_permissions: webMatches,
     commands: {
       [toggleCommand]: {
-        suggested_key: { default: 'Alt+Shift+D' },
+        suggested_key: {
+          default: 'Ctrl+Shift+Space',
+          ...((browser === 'chrome' || browser === 'edge') && { chromeos: 'Ctrl+Search+Space' }),
+        },
         description: 'Toggle light and dark in the current tab',
       },
     },
