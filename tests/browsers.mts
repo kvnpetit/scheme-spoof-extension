@@ -23,18 +23,20 @@ type BrowserScenario = (browser: TestBrowser) => Promise<void>;
 export async function until<T>(
   check: () => T | Promise<T>,
   description: string,
+  timeoutMs = 10_000,
 ): Promise<NonNullable<T>> {
-  for (let attempt = 0; attempt < 80; attempt++) {
+  const deadline = Date.now() + timeoutMs;
+  do {
     const result = await check();
     if (result) return result;
     await new Promise((done) => setTimeout(done, 125));
-  }
+  } while (Date.now() < deadline);
   throw new Error('Timed out waiting for ' + description);
 }
 
 function browserProcess(executable: string, args: string[], profile: string[], env = process.env) {
   const child = spawn(executable, [...args, ...profile], {
-    stdio: 'ignore',
+    stdio: ['ignore', 'inherit', 'inherit'],
     env,
     windowsHide: true,
   });
@@ -244,8 +246,14 @@ export async function launchFirefox(executable: string, profile: string, run: Br
 
   try {
     const socket = await until(
-      () => connectToMarionette(port).catch(() => undefined),
+      () => {
+        if (child.exitCode !== null || child.signalCode !== null) {
+          throw new Error('Firefox exited before starting Marionette');
+        }
+        return connectToMarionette(port).catch(() => undefined);
+      },
       'Firefox Marionette',
+      30_000,
     );
     socket.setTimeout(20_000, () => socket.destroy(new Error('Firefox Marionette timed out')));
     const data = socket[Symbol.asyncIterator]();

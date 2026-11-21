@@ -61,6 +61,19 @@ jobs:
       - name: Test the Chromium extension
         run: bun run test:chromium
 
+      - name: Install the pinned Gecko test browser
+        shell: bash
+        run: |
+          version=153.7.0esr
+          sha256=7d2eb92ca3a7b2a83de092eb9b94c853980214de2fbfdccb2ac39d61c593c5a5
+          archive="$RUNNER_TEMP/firefox-$version.tar.xz"
+          curl --fail --silent --show-error --location --retry 3 --output "$archive" \
+            "https://archive.mozilla.org/pub/firefox/releases/$version/linux-x86_64/en-US/firefox-$version.tar.xz"
+          printf '%s  %s\n' "$sha256" "$archive" | sha256sum --check
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          "$RUNNER_TEMP/firefox/firefox" --version
+          printf 'SCHEMESPOOF_FIREFOX=%s/firefox/firefox\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
       - name: Test the Gecko extension
         run: bun run test:gecko
 

@@ -192,7 +192,7 @@ Follow the run in the repository's **Actions** tab. When **Publish GitHub Releas
 
 Run `bun run playwright install webkit` once, then run `bun run build` followed by `bun run test` for all three engines. To check a single engine, build and test it using the commands in the [table above](#production-builds-and-archives).
 
-The Chromium and Gecko tests look for Chrome or Chromium and for Firefox on Windows, Linux, and macOS. Override discovery with `SCHEMESPOOF_CHROME` or `SCHEMESPOOF_CHROMIUM` for the Chromium test, and `SCHEMESPOOF_FIREFOX` for the Gecko test. GitHub Actions uses the browsers bundled with its Ubuntu image. Both suites use temporary profiles and [an HTTP test page](tests/fixture.html) to check independent tab themes, reloads, navigation, tab closure, restoration of System mode, live CSS and JavaScript changes, and diagnostics.
+The Chromium and Gecko tests look for Chrome or Chromium and for Firefox on Windows, Linux, and macOS. Override discovery with `SCHEMESPOOF_CHROME` or `SCHEMESPOOF_CHROMIUM` for the Chromium test, and `SCHEMESPOOF_FIREFOX` for the Gecko test. GitHub Actions uses Chrome from its Ubuntu image and installs a pinned Firefox ESR build verified by SHA-256. Both suites use temporary profiles and [an HTTP test page](tests/fixture.html) to check independent tab themes, reloads, navigation, tab closure, restoration of System mode, live CSS and JavaScript changes, and diagnostics.
 
 The WebKit test runs the target's compiled page script before the fixture's own JavaScript and checks `matchMedia`, change events, linked and dynamic stylesheets, and restoration of System mode. Ubuntu CI uses `playwright install --with-deps webkit` to download the browser and install the required system libraries.
 
