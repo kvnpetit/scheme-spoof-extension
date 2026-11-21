@@ -15,6 +15,7 @@
   "include": [
     ".wxt/wxt.d.ts",
     "entrypoints/**/*.ts",
+    "scripts/**/*.mts",
     "utils/**/*.ts",
     "tests/**/*.mts",
     "wxt.config.ts"

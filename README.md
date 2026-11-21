@@ -4,7 +4,7 @@ SchemeSpoof is a Manifest V3 extension with builds for Chromium (Blink), Gecko, 
 
 Use it to preview light and dark on sites that follow `prefers-color-scheme`, even when the site has no visible theme switch. Open the SchemeSpoof popup and choose **Light** or **Dark** for that tab.
 
-[Installation](#install-locally-without-a-store) · [Browsers](#browser-compatibility) · [Usage](#choose-a-theme) · [Diagnostics](#page-diagnostics) · [Development](#develop-and-package) · [Releases](#publish-a-github-release) · [License](LICENSE)
+[Installation](#install-locally-without-a-store) · [Browsers](#browser-compatibility) · [Usage](#choose-a-theme) · [Diagnostics](#page-diagnostics) · [Development](#develop-and-package) · [Releases](#publish-a-github-release) · [Changelog](CHANGELOG.md) · [License](LICENSE)
 
 ## Install locally without a store
 
@@ -174,10 +174,16 @@ CI covers all three engine families. For Chromium (Blink) and Gecko, it loads th
 ### Release artifacts and retries
 
 1. The build job checks all three manifests for Manifest V3 and the tag-derived version and verifies that each build contains the project license. It creates `schemespoof-vMAJOR.MINOR.PATCH-<wxt-target>.zip` for each engine family with `manifest.json` and `LICENSE` at the ZIP root. It writes `SHA256SUMS.txt` and uploads the files as the `schemespoof-release` workflow artifact.
-2. After the build job succeeds, the release job downloads the artifact, checks the SHA-256 sums and the three expected ZIP files, and publishes them with installation notes under **Releases**. It uses the built-in GitHub token with `contents: write` in the release job.
+2. After the build job succeeds, the release job downloads the artifact, checks the SHA-256 sums and the three expected ZIP files, and publishes them with the generated changelog and installation notes under **Releases**. It uses the built-in GitHub token with `contents: write` in the release job.
 3. On retry, the workflow leaves its already published release in place. It updates its own draft and publishes it if needed. If the tag has a release created outside the workflow, it stops so that release can be reviewed.
 
 ## Publish a GitHub release
+
+Write [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) such as `feat(popup): show the active shortcut` or `fix: avoid a keyboard shortcut conflict`. Use the same format for squash-merge titles. The release workflow groups commits since the previous reachable release tag and highlights changes marked with `!` or a `BREAKING CHANGE:` footer. The first release includes the full history up to its tag.
+
+Run `bun run changelog` to preview committed changes since the latest release tag, or `bun run changelog v0.1.1` to preview the notes for a specific tag. The generated changelog appears in the GitHub release body above the installation instructions.
+
+The [changelog](CHANGELOG.md) records all tagged versions. Run `bun run changelog --write` after creating or fetching a release tag to regenerate the file from Git history.
 
 Push the commit you want to release to GitHub, then create and push a new tag for that commit. Use `vMAJOR.MINOR.PATCH` with plain integer components from 0 to 65535. Tags with leading zeroes, prerelease suffixes, or version `0.0.0` fail validation. Use a new tag each time.
 

@@ -23,6 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: ${{ github.ref_type == 'tag' && '0' || '1' }}
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
@@ -100,6 +101,7 @@ jobs:
 
           destination="$RUNNER_TEMP/schemespoof-release"
           mkdir "$destination"
+          bun run changelog "$GITHUB_REF_NAME" > "$destination/CHANGELOG.md"
           assets=()
           for browser in "${browsers[@]}"; do
             asset="schemespoof-${GITHUB_REF_NAME}-${browser}.zip"
@@ -153,8 +155,13 @@ jobs:
           done
 
           notes="$RUNNER_TEMP/schemespoof-notes.md"
-          cat > "$notes" <<'EOF'
-          <!-- schemespoof-release -->
+          {
+            printf '<!-- schemespoof-release -->\n\n'
+            cat CHANGELOG.md
+            cat <<'EOF'
+
+          ## Installation
+
           Choose a SchemeSpoof ZIP under **Assets** by engine family, then extract it. Each ZIP uses the corresponding WXT target name.
 
           - **Chromium (Blink)** — Use `-chrome.zip` for compatible desktop browsers, including Chrome, Edge, and Brave. Enable Developer mode on the extensions page and load the extracted folder with **Load unpacked**.
@@ -162,8 +169,9 @@ jobs:
           - **WebKit** — Use `-safari.zip` for Safari 18.4+. On macOS, select **Add Temporary Extension…** in Safari’s Developer settings and choose the extracted folder. Follow the Xcode packaging instructions for iPhone and iPad.
           - **SHA256SUMS.txt** contains a SHA-256 checksum for each ZIP.
           EOF
-          printf '\n[Full installation instructions](%s/%s/blob/%s/README.md#install-locally-without-a-store)\n' \
-            "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" >> "$notes"
+            printf '\n[Full installation instructions](%s/%s/blob/%s/README.md#install-locally-without-a-store)\n' \
+              "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME"
+          } > "$notes"
 
           existing=$(gh release view "$GITHUB_REF_NAME" --json body,isDraft --jq \
             'if (.body // "" | contains("<!-- schemespoof-release -->")) then
@@ -176,7 +184,7 @@ jobs:
               ;;
             draft)
               gh release upload "$GITHUB_REF_NAME" "${assets[@]}" SHA256SUMS.txt --clobber
-              gh release edit "$GITHUB_REF_NAME" --draft=false --verify-tag
+              gh release edit "$GITHUB_REF_NAME" --draft=false --verify-tag --notes-file "$notes"
               ;;
             external)
               echo "A release already exists for $GITHUB_REF_NAME. Review it before retrying." >&2
@@ -184,6 +192,6 @@ jobs:
               ;;
             *)
               gh release create "$GITHUB_REF_NAME" "${assets[@]}" SHA256SUMS.txt \
-                --verify-tag --title "SchemeSpoof $GITHUB_REF_NAME" --notes-file "$notes" --generate-notes
+                --verify-tag --title "SchemeSpoof $GITHUB_REF_NAME" --notes-file "$notes"
               ;;
           esac

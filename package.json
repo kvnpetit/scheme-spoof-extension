@@ -7,6 +7,7 @@
   "type": "module",
   "packageManager": "bun@1.4.5",
   "scripts": {
+    "changelog": "bun scripts/changelog.mts",
     "dev": "bun run dev:chromium",
     "dev:chromium": "wxt -b chrome",
     "dev:gecko": "wxt -b firefox",
