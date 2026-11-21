@@ -2,6 +2,8 @@
 
 SchemeSpoof is a Manifest V3 extension with builds for Chromium (Blink), Gecko, and WebKit. It lets developers test the color scheme a page sees in the current tab without changing the theme of the browser or operating system.
 
+Use it to preview light and dark on sites that follow `prefers-color-scheme`, even when the site has no visible theme switch. Open the SchemeSpoof popup and choose **Light** or **Dark** for that tab.
+
 [Installation](#install-locally-without-a-store) · [Browsers](#browser-compatibility) · [Usage](#choose-a-theme) · [Diagnostics](#page-diagnostics) · [Development](#develop-and-package) · [Releases](#publish-a-github-release) · [License](LICENSE)
 
 ## Install locally without a store

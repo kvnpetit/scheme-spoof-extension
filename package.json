@@ -2,7 +2,7 @@
   "name": "scheme-spoof-extension",
   "version": "0.1.0",
   "private": true,
-  "description": "Test light and dark color schemes in the current tab without changing your browser or system theme.",
+  "description": "Preview light and dark in the current tab on sites that follow your color preference, even without a theme switch.",
   "license": "MIT",
   "type": "module",
   "packageManager": "bun@1.4.5",
